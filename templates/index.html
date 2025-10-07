@@ -3,43 +3,50 @@
 
 {% block content %}
 <section class="grid">
-  <!-- Chatbot (card) -->
-  <div class="card">
-    <img src="{{ url_for('static', filename='img/bot.png') }}" alt="Bot de Ajuda" class="icon">
-    <h2>Chat de Apoio</h2>
-    <p>Converse com nosso assistente virtual para receber orientação imediata.</p>
-    <button id="abrir-chat"
-      onclick="document.getElementById('chatbox').classList.add('active'); document.getElementById('chat-icon').className='fas fa-times'; document.getElementById('chat-label').textContent='Fechar chat';">Iniciar
-      Chat</button>
-  </div>
+    <div class="card">
+        <img src="{{ url_for('static', filename='img/bot.png') }}" alt="Bot de Ajuda" class="icon">
+        <h2>Chat de Apoio</h2>
+        <p>Converse com nosso assistente virtual para receber orientação imediata.</p>
+        <button id="abrir-chat" class="btn-card btn-card-dark"
+            onclick="document.getElementById('chatbox').classList.add('active'); document.getElementById('chat-icon').className='fas fa-times'; document.getElementById('chat-label').textContent='Fechar chat';">Iniciar Chat</button>
+    </div>
 
-  <div class="card forum">
-    <img src="{{ url_for('static', filename='img/forum.jpg') }}" alt="Fórum de Discussões">
-    <h2>Fórum de Discussões</h2>
-    <p>Participe de conversas com outras pessoas que enfrentam o mesmo desafio.</p>
-    <button>Acessar Fórum</button>
-  </div>
+    <div class="card forum">
+        <img src="{{ url_for('static', filename='img/forum.jpg') }}" alt="Fórum de Discussões">
+        <h2>Fórum de Discussões</h2>
+        <p>Participe de conversas com outras pessoas que enfrentam o mesmo desafio.</p>
+        <a href="{{ url_for('forum') }}" class="btn-card btn-card-blue">Acessar Fórum</a>
+    </div>
 
-  <div class="card noticias">
-    <img src="{{ url_for('static', filename='img/noticias.jpeg') }}"
-      alt="News section illustration showing a concerned person reading a newspaper with headlines about gambling addiction, set in a neutral background with muted colors, conveying a serious and informative atmosphere">
-    <h2>Notícias e Alertas</h2>
-    <p>Veja relatos e notícias reais sobre os impactos do vício em apostas.</p>
-    <a href="{{ url_for('noticias') }}" class="btn-leia">Ver Notícias</a>
+    <div class="card noticias">
+        <img src="{{ url_for('static', filename='img/noticias.jpeg') }}"
+            alt="News section illustration showing a concerned person reading a newspaper with headlines about gambling addiction, set in a neutral background with muted colors, conveying a serious and informative atmosphere">
+        <h2>Notícias e Alertas</h2>
+        <p>Veja relatos e notícias reais sobre os impactos do vício em apostas.</p>
+        <a href="{{ url_for('noticias') }}" class="btn-card btn-card-blue">Ver Notícias</a>
+    </div>
 
-
-  </div>
-
-  <div class="card login">
-    <h2>Área do Usuário</h2>
-    <form>
-      <label for="username">Usuário</label>
-      <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário" required>
-      <label for="password">Senha</label>
-      <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
-      <button type="submit">Entrar</button>
-    </form>
-    <p class="register">Ainda não tem conta? <a href="#">Cadastre-se</a></p>
-  </div>
+    <div class="card login">
+        <h2>Área do Usuário</h2>
+        <form id="formLoginUsuario">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+            <div style="text-align: center; margin-top: 15px;">
+    <a href="{{ url_for('recuperar_senha') }}" style="color: #0056b3; font-size: 0.9em; text-decoration: none;">Esqueci a senha</a>
+</div>
+            <button type="submit">Entrar</button>
+        </form>
+        <div id="loginMessage" style="color: red; text-align: center; margin-top: 10px;"></div>
+        <p class="register">Ainda não tem conta? <a href="{{ url_for('cadastro_usuario') }}">Cadastre-se</a></p>
+    </div>
+</section>
+<section class="cta-colaborador-section">
+    <div class="container">
+        <h2>Você é Psicólogo ou Terapeuta?</h2>
+        <p>Faça parte da nossa rede de apoio e ajude a transformar vidas. Buscamos profissionais comprometidos em oferecer acolhimento e orientação.</p>
+        <a href="{{ url_for('seja_um_colaborador') }}" class="cta-button">Quero Ser um Colaborador</a>
+    </div>
 </section>
 {% endblock %}

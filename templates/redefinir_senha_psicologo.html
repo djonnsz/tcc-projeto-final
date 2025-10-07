@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Redefinir Senha do Colaborador{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 15px; max-width: 500px; margin: auto;">
+    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        
+        <h1 style="margin-top: 0; text-align: center;">Crie sua Nova Senha</h1>
+
+        <div id="feedback-message"></div>
+
+        <form id="form-nova-senha-psicologo" method="POST" style="margin-top: 20px;">
+            <input type="hidden" name="token" value="{{ token | e }}">
+
+            <div class="input-group" style="margin-bottom: 1rem;">
+                <label for="senha" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Nova Senha</label>
+                <input type="password" id="senha" name="senha" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <div class="input-group" style="margin-bottom: 1.5rem;">
+                <label for="confirma" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Confirme a Nova Senha</label>
+                <input type="password" id="confirma" name="confirma" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <button type="submit" class="cta-button" style="width: 100%; padding: 12px;">
+                Redefinir Senha
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('form-nova-senha-psicologo');
+    const feedbackDiv = document.getElementById('feedback-message');
+    const button = form.querySelector('button');
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        button.disabled = true;
+        feedbackDiv.innerHTML = '<p style="color: blue; text-align: center;">Processando...</p>';
+
+        const formData = new FormData(form);
+        const urlPhp = 'http://localhost/tcc-projeto-final/psicologos/processa_nova_senha_psicologo.php';
+
+        fetch(urlPhp, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const messageClass = data.status === 'success' ? 'green' : 'red';
+            feedbackDiv.innerHTML = '<p style="color: ' + messageClass + '; text-align: center;">' + data.message + '</p>';
+
+            if (data.status === 'success') {
+                setTimeout(function () {
+                    // Redireciona para a página de login do psicólogo
+                    window.location.href = "{{ url_for('login_psicologo') }}"; 
+                }, 3000);
+            } else {
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            feedbackDiv.innerHTML = '<p style="color: red; text-align: center;">Ocorreu um erro de comunicação.</p>';
+            button.disabled = false;
+        });
+    });
+});
+</script>
+{% endblock %}

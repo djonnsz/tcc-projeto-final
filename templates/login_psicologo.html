@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Login do Colaborador{% endblock %}
+
+{% block content %}
+<div class="container-form" style="padding: 2rem 0;">
+    <h2 style="text-align: center; margin-bottom: 1.5rem;">Login do Colaborador</h2>
+    <p style="text-align: center; margin-bottom: 2rem;">Acesse seu painel para gerenciar suas informações.</p>
+
+    <form id="formLoginPsicologo" style="max-width: 500px; margin: auto;">
+        <div class="input-group" style="margin-bottom: 1rem;">
+            <label for="email" style="display: block; margin-bottom: 0.5rem;">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <div class="input-group" style="margin-bottom: 1.5rem;">
+            <label for="senha" style="display: block; margin-bottom: 0.5rem;">Senha</label>
+            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 1rem; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">Entrar</button>
+    </form>
+
+    <div id="formMessage" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('recuperar_senha_psicologo') }}">Esqueceu sua senha?</a>
+    </div>
+</div>
+{% endblock %}

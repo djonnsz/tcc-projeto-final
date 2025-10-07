@@ -1,51 +1,74 @@
 <?php
-session_start();
+// Não usaremos sessões para este script
+// session_start();
 include("conexao.php");
 
-$usuario_id = $_SESSION['reset_usuario_id'] ?? '';
-$reset_id = $_SESSION['reset_id'] ?? '';
-$token = $_GET['token'] ?? '';
+// Cabeçalhos para permitir a comunicação (CORS) e definir a resposta como JSON
+header("Access-Control-Allow-Origin: *"); 
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header('Content-Type: application/json');
 
-if (!$usuario_id || !$reset_id) {
-    $_SESSION['msg_nova_senha'] = ['texto'=>"Ação inválida.", 'tipo'=>"erro"];
-    header("Location: nova_senha.php?token=".$token);
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['status' => 'error', 'message' => 'Acesso inválido.']);
     exit();
 }
 
+// Recebemos os dados via POST
+$token = $_POST['token'] ?? '';
 $senha = $_POST['senha'] ?? '';
-$confirma = $_POST['confirma_senha'] ?? '';
+$confirma_senha = $_POST['confirma_senha'] ?? '';
 
-if (!$senha || !$confirma) {
-    $_SESSION['msg_nova_senha'] = ['texto'=>"Preencha todos os campos.", 'tipo'=>"erro"];
-    header("Location: nova_senha.php?token=".$token);
+// 1. Validação dos campos
+if (empty($token) || empty($senha) || empty($confirma_senha)) {
+    echo json_encode(['status' => 'error', 'message' => 'Por favor, preencha todos os campos.']);
     exit();
 }
 
-if ($senha !== $confirma) {
-    $_SESSION['msg_nova_senha'] = ['texto'=>"As senhas não coincidem.", 'tipo'=>"erro"];
-    header("Location: nova_senha.php?token=".$token);
+if ($senha !== $confirma_senha) {
+    echo json_encode(['status' => 'error', 'message' => 'As senhas não coincidem.']);
     exit();
 }
 
-// Atualiza senha
-$senhaHash = password_hash($senha, PASSWORD_DEFAULT);
-$stmt = $conn->prepare("UPDATE usuarios SET senha=? WHERE id=?");
-$stmt->bind_param("si", $senhaHash, $usuario_id);
+// 2. Validar o token diretamente no banco de dados
+$stmt = $conn->prepare("SELECT id, usuario_id FROM reset_senhas WHERE token=? AND usado=0 AND expira_em > NOW() LIMIT 1");
+$stmt->bind_param("s", $token);
 $stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    echo json_encode(['status' => 'error', 'message' => 'Token inválido ou expirado. Tente novamente.']);
+    exit();
+}
+
+$reset_data = $result->fetch_assoc();
+$usuario_id = $reset_data['usuario_id'];
+$reset_id = $reset_data['id'];
 $stmt->close();
 
-// Marca token como usado
-$stmt2 = $conn->prepare("UPDATE reset_senhas SET usado=1 WHERE id=?");
-$stmt2->bind_param("i", $reset_id);
-$stmt2->execute();
-$stmt2->close();
+// 3. Atualizar a senha do usuário
+$senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+$stmt_update = $conn->prepare("UPDATE usuarios SET senha=? WHERE id=?");
+$stmt_update->bind_param("si", $senhaHash, $usuario_id);
 
-// Limpa sessões temporárias
-unset($_SESSION['reset_usuario_id']);
-unset($_SESSION['reset_id']);
+if ($stmt_update->execute()) {
+    $stmt_update->close();
+    
+    // 4. Marcar o token como usado para não ser reutilizado
+    $stmt_deactivate = $conn->prepare("UPDATE reset_senhas SET usado=1 WHERE id=?");
+    $stmt_deactivate->bind_param("i", $reset_id);
+    $stmt_deactivate->execute();
+    $stmt_deactivate->close();
+    
+    echo json_encode(['status' => 'success', 'message' => 'Senha redefinida com sucesso! Você será redirecionado.']);
+    exit();
 
-// Mensagem de sucesso
-$_SESSION['msg_nova_senha'] = ['texto'=>"Senha redefinida com sucesso! Faça login.", 'tipo'=>"sucesso"];
-header("Location: login.php");
-exit();
+} else {
+    echo json_encode(['status' => 'error', 'message' => 'Ocorreu um erro ao atualizar sua senha. Tente novamente.']);
+    exit();
+}
 ?>

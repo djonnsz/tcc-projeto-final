@@ -1,0 +1,158 @@
+{% extends "base.html" %}{% block title %}{{ post.titulo }}{% endblock %} {%
+block content %}
+<div
+  class="container"
+  style="padding: 40px 15px; max-width: 900px; margin: auto"
+>
+  <div
+    class="post-principal"
+    style="
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    "
+  >
+    <h1 style="margin-top: 0">{{ post.titulo }}</h1>
+    <p
+      style="
+        color: #6c757d;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+      "
+    >
+      Postado por <strong>{{ post.autor }}</strong> em
+      {{ post.criado_em.strftime('%d/%m/%Y às %H:%M') }}
+    </p>
+    <div class="post-conteudo" style="line-height: 1.7">
+      {{ post.conteudo | nl2br }}
+    </div>
+
+    {% if post.usuario_id == session.get('usuario_id') %}
+    <div
+      class="post-acoes"
+      style="
+        margin-top: 20px;
+        text-align: right;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+      "
+    >
+      <form
+        action="{{ url_for('excluir_post', post_id=post.id) }}"
+        method="POST"
+        onsubmit="return confirm('Tem certeza que deseja excluir este tópico? Esta ação não pode ser desfeita.');"
+      >
+        <button
+          type="submit"
+          style="
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+          "
+        >
+          Excluir Tópico
+        </button>
+      </form>
+    </div>
+    {% endif %}
+    </div>
+  <div class="secao-comentarios" style="margin-top: 40px">
+    <h2>Comentários</h2>
+
+    <div class="lista-comentarios" style="margin-top: 20px">
+      {% for comentario in comentarios %}
+      <div
+        class="comentario-item"
+        style="
+          border: 1px solid #eee;
+          padding: 15px;
+          border-radius: 8px;
+          margin-bottom: 15px;
+          background: #f9f9f9;
+        "
+      >
+        <p style="margin: 0; line-height: 1.6">{{ comentario.conteudo }}</p>
+        <small style="color: #6c757d; margin-top: 10px; display: block">
+          Respondido por <strong>{{ comentario.autor_comentario }}</strong> em
+          {{ comentario.criado_em.strftime('%d/%m/%Y às %H:%M') }}
+        </small>
+      </div>
+      {% else %}
+      <div
+        style="
+          text-align: center;
+          padding: 30px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+        "
+      >
+        <p>Nenhum comentário ainda. Seja o primeiro a responder!</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="form-comentario" style="margin-top: 40px">
+      <h3 style="border-bottom: 2px solid #0056b3; padding-bottom: 10px">
+        Deixe sua resposta
+      </h3>
+      <form
+        method="POST"
+        action="{{ url_for('adicionar_comentario', post_id=post.id) }}"
+        style="margin-top: 20px"
+      >
+        {# Este bloco só aparece se o utilizador NÃO estiver logado #} {% if not
+        session.get('usuario_id') %}
+        <div class="input-group" style="margin-bottom: 1rem">
+          <label
+            for="nome_anonimo"
+            style="display: block; margin-bottom: 0.5rem; font-weight: bold"
+            >Nome (Opcional)</label
+          >
+          <input
+            type="text"
+            id="nome_anonimo"
+            name="nome_anonimo"
+            placeholder="Como gostaria de ser chamado?"
+            style="
+              width: 100%;
+              padding: 0.75rem;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+            "
+          />
+        </div>
+        {% endif %}
+
+        <div class="input-group" style="margin-bottom: 1rem">
+          <label
+            for="conteudo"
+            style="display: block; margin-bottom: 0.5rem; font-weight: bold"
+            >Seu Comentário</label
+          >
+          <textarea
+            id="conteudo"
+            name="conteudo"
+            rows="5"
+            placeholder="Escreva sua resposta aqui..."
+            required
+            style="
+              width: 100%;
+              padding: 0.75rem;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              font-family: inherit;
+            "
+          ></textarea>
+        </div>
+
+        <button type="submit" class="cta-button">Enviar Comentário</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

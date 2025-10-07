@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Crie sua Conta{% endblock %}
+
+{% block content %}
+<div class="container-form" style="padding: 2rem 0;">
+    <h2 style="text-align: center; margin-bottom: 1.5rem;">Crie sua Conta</h2>
+    <p style="text-align: center; margin-bottom: 2rem;">O cadastro é rápido e necessário para acessar o teste de avaliação.</p>
+    
+    <form id="formCadastroUsuario" style="max-width: 500px; margin: auto;">
+        <div class="input-group" style="margin-bottom: 1rem;">
+            <label for="nome" style="display: block; margin-bottom: 0.5rem;">Nome</label>
+            <input type="text" id="nome" name="nome" placeholder="Como podemos te chamar?" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <div class="input-group" style="margin-bottom: 1rem;">
+            <label for="email" style="display: block; margin-bottom: 0.5rem;">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="Seu melhor e-mail" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <div class="input-group" style="margin-bottom: 1rem;">
+            <label for="senha" style="display: block; margin-bottom: 0.5rem;">Senha</label>
+            <input type="password" id="senha" name="senha" placeholder="Crie uma senha" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <div class="input-group" style="margin-bottom: 1.5rem;">
+            <label for="confirma_senha" style="display: block; margin-bottom: 0.5rem;">Confirme sua Senha</label>
+            <input type="password" id="confirma_senha" name="confirma_senha" placeholder="Confirme a senha criada" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        
+        <button type="submit" class="btn" style="width: 100%; padding: 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">Criar Conta</button>
+    </form>
+    
+    <div id="formMessage" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+
+</div>
+{% endblock %}

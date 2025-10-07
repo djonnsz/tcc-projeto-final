@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; padding: 50px 20px;">
+    <h1>{{ titulo }}</h1>
+    <p style="font-size: 1.2rem; margin-top: 20px;">{{ mensagem }}</p>
+    
+    {# O código abaixo verifica se o status foi de sucesso para mostrar o botão de login #}
+    {% if request.args.get('status') == 'sucesso' %}
+        {# ATENÇÃO: Verifique qual é a URL correta para o login do psicólogo no seu app.py #}
+        <a href="#" class="cta-button" style="margin-top: 30px;">Fazer Login</a>
+    {% else %}
+        <a href="{{ url_for('home') }}" class="cta-button" style="margin-top: 30px;">Voltar para a Página Inicial</a>
+    {% endif %}
+</div>
+{% endblock %}

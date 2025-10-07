@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Meu Painel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 15px;">
+    <h1 style="text-align: center;">Olá, <span id="nome-usuario-painel">Usuário</span>!</h1>
+    
+    <p style="text-align: center; font-size: 1.2rem; margin-top: 20px;">
+        Este é o seu espaço. Em breve, o teste de avaliação estará disponível aqui.
+    </p>
+
+    <div style="margin-top: 50px; padding: 40px; border: 2px dashed #eee; border-radius: 8px; text-align: center;">
+        <h2>Teste de Avaliação</h2>
+        <p>Funcionalidade em desenvolvimento.</p>
+        <button class="btn" style="margin-top: 20px;">Iniciar Teste</button>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="#" id="logoutUsuarioButton" style="color: red;">Sair (Logout)</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pega os dados do usuário guardados no navegador
+        const userDataString = localStorage.getItem('userData');
+        
+        if (userDataString) {
+            const user = JSON.parse(userDataString);
+            // Preenche o nome do usuário no título da página
+            document.getElementById('nome-usuario-painel').textContent = user.nome;
+        } else {
+            // Se NÃO encontrar dados de login, redireciona para a página inicial
+            // Isso "protege" a página contra acesso direto
+            window.location.href = '/'; 
+        }
+    });
+</script>
+{% endblock %}

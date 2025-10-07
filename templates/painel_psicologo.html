@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Painel do Colaborador{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 15px;">
+    <h1 style="text-align: center;">Bem-vindo(a) ao seu Painel, <span id="nome-psicologo-titulo"></span>!</h1>
+    <p style="text-align: center; font-size: 1.2rem; margin-top: 20px;">
+        Esta é a sua área restrita. Aqui você pode gerenciar suas informações.
+    </p>
+    
+    <div style="margin-top: 40px; padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 700px; margin-left: auto; margin-right: auto;">
+        <h2>Suas Informações</h2>
+
+        <form id="formUpdatePsicologo">
+            <div class="input-group" style="margin-bottom: 1rem;">
+                <label for="nome" style="display: block; margin-bottom: 0.5rem;">Nome Completo</label>
+                <input type="text" id="nome" name="nome" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <div class="input-group" style="margin-bottom: 1rem;">
+                <label for="email" style="display: block; margin-bottom: 0.5rem;">E-mail (não pode ser alterado)</label>
+                <input type="email" id="email" name="email" readonly style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; background-color: #e9ecef;">
+            </div>
+
+            <div class="input-group" style="margin-bottom: 1rem;">
+                <label for="celular" style="display: block; margin-bottom: 0.5rem;">Celular (WhatsApp)</label>
+                <input type="text" id="celular" name="celular" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 1rem;">
+                <label for="especialidade" style="display: block; margin-bottom: 0.5rem;">Especialidade</label>
+                <input type="text" id="especialidade" name="especialidade" required style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%; padding: 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">Salvar Alterações</button>
+        </form>
+        <div id="formUpdateMessage" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="#" id="logoutButton" style="color: red;">Sair (Logout)</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const psicologoDataString = localStorage.getItem('psicologoData');
+
+        if (psicologoDataString) {
+            const psicologo = JSON.parse(psicologoDataString);
+
+            // Preenche o título
+            document.getElementById('nome-psicologo-titulo').textContent = psicologo.nome.split(' ')[0];
+            
+            // Preenche os VALORES dos campos do formulário
+            document.getElementById('nome').value = psicologo.nome;
+            document.getElementById('email').value = psicologo.email;
+            document.getElementById('celular').value = psicologo.celular;
+            document.getElementById('especialidade').value = psicologo.especialidade;
+
+        } else {
+            // Se não encontrar os dados, redireciona para o login
+            window.location.href = '/login-psicologo';
+        }
+    });
+</script>
+{% endblock %}

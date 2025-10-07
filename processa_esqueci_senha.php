@@ -1,17 +1,31 @@
 <?php
-session_start();
+// Adicionamos os cabeçalhos CORS para permitir a comunicação
+header("Access-Control-Allow-Origin: http://127.0.0.1:5000");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header('Content-Type: application/json'); // Informa ao navegador que a resposta é JSON
+
+// Se o pedido for um OPTIONS (preflight request), apenas retorne os cabeçalhos.
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit;
+}
+
 include("conexao.php");
 require __DIR__ . '/libs/PHPMailer/src/PHPMailer.php';
 require __DIR__ . '/libs/PHPMailer/src/SMTP.php';
 require __DIR__ . '/libs/PHPMailer/src/Exception.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-$email = $_POST['email'] ?? '';
+// A partir do PHP 8, é mais seguro pegar os dados assim:
+$post_data = file_get_contents("php://input");
+$decoded_data = json_decode($post_data, true);
+$email = $decoded_data['email'] ?? ($_POST['email'] ?? '');
+
 
 if(!$email){
-    $_SESSION['msg'] = "Preencha o e-mail.";
-    header("Location: esqueci_senha.php");
+    echo json_encode(['status' => 'error', 'message' => 'Preencha o e-mail.']);
     exit();
 }
 
@@ -23,34 +37,31 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if($result->num_rows === 0){
-    $_SESSION['msg'] = "E-mail não cadastrado.";
-    header("Location: esqueci_senha.php");
+    echo json_encode(['status' => 'error', 'message' => 'E-mail não cadastrado.']);
     exit();
 }
 
 $user = $result->fetch_assoc();
-
-// Gera token de recuperação (64 caracteres hex)
 $token = bin2hex(random_bytes(32));
-$expira = date("Y-m-d H:i:s", strtotime("+1 hour")); // Expira em 1 hora
+$expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
-// Salva token no banco (tabela nova: reset_senhas)
+// Salva token no banco
 $sqlIns = "INSERT INTO reset_senhas (usuario_id, token, expira_em) VALUES (?, ?, ?)";
 $stmtIns = $conn->prepare($sqlIns);
 $stmtIns->bind_param("iss", $user['id'], $token, $expira);
 $stmtIns->execute();
 $stmtIns->close();
 
-// Envia e-mail com link de recuperação
-$link = "http://localhost/site/nova_senha.php?token=".$token; // ajuste conforme seu projeto
+$link = "http://127.0.0.1:5000/redefinir-senha?token=".$token;
 
 $mail = new PHPMailer(true);
 try{
     $mail->isSMTP();
+    $mail->CharSet = 'UTF-8';
     $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'djonnsouza29@gmail.com'; // ajuste
-    $mail->Password   = 'jrop pyqj bjpw mfbh';     // senha de app
+    $mail->Username   = 'djonnsouza29@gmail.com';
+    $mail->Password   = 'jrop pyqj bjpw mfbh';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
 
@@ -65,13 +76,11 @@ try{
     $mail->AltBody = "Redefinir senha: {$link}";
 
     $mail->send();
-    $_SESSION['msg'] = "Enviamos um link de recuperação para seu e-mail.";
-    header("Location: esqueci_senha.php");
+    echo json_encode(['status' => 'success', 'message' => 'Enviamos um link de recuperação para seu e-mail.']);
     exit();
 
-}catch(Exception $e){
-    $_SESSION['msg'] = "Erro ao enviar e-mail: ".$mail->ErrorInfo;
-    header("Location: esqueci_senha.php");
+} catch(Exception $e) {
+    echo json_encode(['status' => 'error', 'message' => 'Erro ao enviar e-mail: '.$mail->ErrorInfo]);
     exit();
 }
 ?>

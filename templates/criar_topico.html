@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Criar Novo Tópico{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 15px; max-width: 800px; margin: auto;">
+    <h1>Criar Novo Tópico</h1>
+    <p style="margin-bottom: 2rem;">Partilhe a sua história ou faça uma pergunta à comunidade. A sua identidade permanecerá anónima se não estiver logado.</p>
+    
+    <form method="POST" action="{{ url_for('criar_topico') }}">
+        
+        {# Este bloco só aparece se o utilizador NÃO estiver logado #}
+        {% if not session.get('usuario_id') %}
+        <div class="input-group" style="margin-bottom: 1.5rem;">
+            <label for="nome_anonimo" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Nome (Opcional)</label>
+            <input type="text" id="nome_anonimo" name="nome_anonimo" placeholder="Como gostaria de ser chamado? (ex: Anónimo)" 
+                   style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        {% endif %}
+
+        <div class="input-group" style="margin-bottom: 1.5rem;">
+            <label for="titulo" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Título do Tópico</label>
+            <input type="text" id="titulo" name="titulo" placeholder="Digite um título claro e objetivo" required 
+                   style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <div class="input-group" style="margin-bottom: 1.5rem;">
+            <label for="conteudo" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Sua Mensagem</label>
+            <textarea id="conteudo" name="conteudo" rows="10" placeholder="Escreva sua dúvida ou compartilhe sua história aqui..." required 
+                      style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"></textarea>
+        </div>
+        
+        <button type="submit" class="cta-button">Publicar Tópico</button>
+    </form>
+</div>
+{% endblock %}

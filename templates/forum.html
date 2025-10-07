@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Fórum de Discussões{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 15px; max-width: 900px; margin: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1>Fórum de Discussões</h1>
+        <a href="/forum/novo" class="cta-button">Criar Novo Tópico</a>
+    </div>
+
+    <div class="lista-posts">
+        {% for post in posts %}
+        <div class="post-item" style="border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+            <h3 style="margin-top: 0;">
+                <a href="/forum/post/{{ post.id }}" style="text-decoration: none; color: #0056b3;">{{ post.titulo }}</a>
+            </h3>
+            <p style="color: #6c757d;">
+                Postado por <strong>{{ post.autor }}</strong> em {{ post.criado_em.strftime('%d/%m/%Y às %H:%M') }}
+            </p>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 40px; background-color: #f8f9fa; border-radius: 8px;">
+            <p>Nenhum tópico foi criado ainda. Seja o primeiro!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Recuperar Senha do Colaborador{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 15px; max-width: 500px; margin: auto;">
+    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+        
+        <h1 style="margin-top: 0;">Recuperar Senha</h1>
+        <p style="color: #6c757d;">
+            Digite seu e-mail de colaborador. Se estiver cadastrado, enviaremos um link para você redefinir sua senha.
+        </p>
+
+        <form id="form-recuperar-psicologo" style="margin-top: 20px;">
+            <div class="input-group" style="margin-bottom: 1.5rem; text-align: left;">
+                <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">E-mail</label>
+                <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required 
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <button type="submit" class="cta-button" style="width: 100%; padding: 12px;">
+                Enviar Link de Recuperação
+            </button>
+        </form>
+
+        <div id="mensagem-feedback" style="margin-top: 15px;"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('form-recuperar-psicologo');
+    const feedbackDiv = document.getElementById('mensagem-feedback');
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        feedbackDiv.innerHTML = '<p style="color: #0056b3;">Processando...</p>';
+        const email = document.getElementById('email').value;
+        
+        // URL do seu script PHP para processar o pedido dos psicólogos
+        const urlPhp = 'http://localhost/tcc-projeto-final/psicologos/processa_esqueci_senha_psicologo.php';
+
+        fetch(urlPhp, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'email=' + encodeURIComponent(email)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                feedbackDiv.innerHTML = '<p style="color: green;">' + data.message + '</p>';
+            } else {
+                feedbackDiv.innerHTML = '<p style="color: red;">' + data.message + '</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição:', error);
+            feedbackDiv.innerHTML = '<p style="color: red;">Ocorreu um erro ao comunicar com o servidor.</p>';
+        });
+    });
+});
+</script>
+{% endblock %}

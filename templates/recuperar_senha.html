@@ -1,0 +1,108 @@
+{% extends "base.html" %} {% block title %}Recuperar Senha{% endblock %} {% block
+content %}
+<div
+  class="container"
+  style="padding: 40px 15px; max-width: 500px; margin: auto"
+>
+  <div
+    style="
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    "
+  >
+    <h1 style="margin-top: 0">Recuperar Senha</h1>
+    <p style="color: #6c757d">
+      Digite o seu e-mail abaixo. Se ele estiver cadastrado no nosso sistema,
+      enviaremos um link para você redefinir sua senha.
+    </p>
+
+    <form id="form-recuperar" style="margin-top: 20px">
+      <div class="input-group" style="margin-bottom: 1.5rem; text-align: left">
+        <label
+          for="email"
+          style="display: block; margin-bottom: 0.5rem; font-weight: bold"
+          >E-mail</label
+        >
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="seuemail@exemplo.com"
+          required
+          style="
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+          "
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="cta-button"
+        style="width: 100%; padding: 12px"
+      >
+        Enviar Link de Recuperação
+      </button>
+    </form>
+
+    <div id="mensagem-feedback" style="margin-top: 15px"></div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("form-recuperar");
+    const feedbackDiv = document.getElementById("mensagem-feedback");
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      feedbackDiv.innerHTML =
+        '<p style="color: #0056b3;">A processar o seu pedido...</p>';
+      feedbackDiv.style.display = "block";
+
+      const email = document.getElementById("email").value;
+
+      // URL CORRETA DO SEU SCRIPT PHP
+      const urlPhp = "http://localhost/tcc-projeto-final/processa_esqueci_senha.php";
+
+      fetch(urlPhp, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "email=" + encodeURIComponent(email),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            // Se a resposta do servidor for um erro (ex: 404, 500), lança um erro
+            throw new Error("Erro na resposta do servidor: " + response.status);
+          }
+          return response.json(); // Tenta converter a resposta para JSON
+        })
+        .then((data) => {
+          if (data.status === "success") {
+            feedbackDiv.innerHTML =
+              '<p style="color: green;">' + data.message + "</p>";
+          } else {
+            // Assumimos que qualquer outro status é um erro
+            feedbackDiv.innerHTML =
+              '<p style="color: red;">' + data.message + "</p>";
+          }
+        })
+        .catch((error) => {
+          // Lida com erros de rede ou JSON inválido
+          console.error("Erro na requisição:", error);
+          feedbackDiv.innerHTML =
+            '<p style="color: red;">Ocorreu um erro ao comunicar com o servidor. Verifique o console para mais detalhes.</p>';
+        });
+    });
+  });
+</script>
+
+{% endblock %}
