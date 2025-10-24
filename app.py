@@ -10,6 +10,8 @@ import requests
 import pymysql
 import re
 from markupsafe import Markup, escape
+from flask_mail import Mail, Message
+
 
 
 # ============================ CONFIG ============================ #
@@ -27,6 +29,13 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 app = Flask(__name__)
 # Chave secreta para a sessão (necessária para o Flask)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "uma-chave-secreta-padrao-muito-forte")
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME') # Seu e-mail no .env
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD') # Sua senha de app no .env
+
+mail = Mail(app)
 
 # ============================ CONFIG BANCO DE DADOS ============================ #
 app.config['MYSQL_HOST'] = 'localhost'
@@ -219,8 +228,37 @@ def noticias():
 def painel():
     return render_template("painel.html")
 
-@app.route("/contato")
+@app.route("/contato", methods=['GET', 'POST'])
 def contato():
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        assunto = request.form.get('assunto')
+        mensagem = request.form.get('mensagem')
+
+        msg = Message(
+            subject=f"Nova Mensagem do Site: {assunto}",
+            sender=app.config['MAIL_USERNAME'],
+            recipients=[app.config['MAIL_USERNAME']]
+        )
+        msg.body = f"De: {nome} <{email}>\n\n{mensagem}"
+        
+        try:
+            print(">>> [INFO] Tentando enviar e-mail...")
+            mail.send(msg)
+            print(">>> [SUCESSO] O comando mail.send(msg) foi executado sem erros.")
+            
+            # ▼▼▼ MENSAGEM AJUSTADA AQUI ▼▼▼
+            flash('Sua mensagem foi enviada com sucesso! Responderemos o mais rápido possível.', 'success')
+
+        except Exception as e:
+            print("!!!!!!!!!! ERRO AO ENVIAR E-MAIL !!!!!!!!!!!")
+            print(e)
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            flash(f'Ocorreu um erro ao enviar a mensagem. Verifique o terminal do servidor.', 'danger')
+
+        return redirect(url_for('contato'))
+
     return render_template("contato.html")
 
 @app.route('/seja-um-colaborador')
@@ -280,6 +318,20 @@ def redefinir_senha():
 @app.route('/recuperar-senha-psicologo')
 def recuperar_senha_psicologo():
     return render_template('recuperar_senha_psicologo.html')
+
+# No topo do app.py, garanta que 'session', 'redirect', 'url_for', e 'flash' estão importados
+# from flask import session, redirect, url_for, flash
+
+@app.route('/logout')
+def logout():
+    # Limpa todos os dados da sessão do servidor
+    session.clear()
+    
+    # (Opcional) Envia uma mensagem de confirmação para o usuário
+    flash('Você saiu da sua conta com sucesso.', 'success')
+    
+    # Redireciona o usuário para a página inicial
+    return redirect(url_for('home'))
 
 # No seu app.py
 
@@ -527,6 +579,134 @@ def encerrar(session_id):
             "text": "A conversa com o profissional foi encerrada. Volte quando quiser conversar novamente."
         })
     return jsonify({"ok": True})
+
+@app.route('/questionario')
+def questionario():
+    # Proteção: Apenas usuários logados podem aceder
+    if 'usuario_id' not in session:
+        # Futuramente, podemos adicionar uma mensagem de erro com flash
+        return redirect(url_for('pagina_de_login_do_usuario')) # Precisa de uma rota de login de usuário
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Busca todas as perguntas
+    cursor.execute("SELECT * FROM questionario_perguntas ORDER BY ordem ASC")
+    perguntas = cursor.fetchall()
+
+    # Busca todas as opções
+    cursor.execute("SELECT * FROM questionario_opcoes")
+    opcoes = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    
+    # Organiza as opções por pergunta para facilitar a exibição no HTML
+    perguntas_com_opcoes = []
+    for pergunta in perguntas:
+        pergunta['opcoes'] = [opt for opt in opcoes if opt['pergunta_id'] == pergunta['id']]
+        perguntas_com_opcoes.append(pergunta)
+
+    return render_template('questionario.html', perguntas=perguntas_com_opcoes)
+
+
+
+@app.route('/questionario/submit', methods=['POST'])
+def processa_questionario():
+    # Apenas usuários logados podem submeter o questionário
+    if 'usuario_id' not in session:
+        return redirect(url_for('login_usuario_ou_home')) # Precisa de uma rota de login
+
+    respostas = request.form
+    usuario_id = session['usuario_id']
+    
+    # Pega os IDs de todas as opções selecionadas pelo usuário
+    opcoes_ids = [int(v) for k, v in respostas.items() if k.startswith('pergunta_')]
+    
+    if len(opcoes_ids) < 10: # Garante que todas as 10 perguntas foram respondidas
+        flash('Por favor, responda a todas as perguntas.', 'warning')
+        return redirect(url_for('questionario'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Calcula a pontuação total
+    # Cria uma string de placeholders (?,?,?,...) para a consulta SQL
+    placeholders = ', '.join(['%s'] * len(opcoes_ids))
+    sql_pontos = f"SELECT SUM(pontos) as pontuacao_total FROM questionario_opcoes WHERE id IN ({placeholders})"
+    cursor.execute(sql_pontos, tuple(opcoes_ids))
+    resultado = cursor.fetchone()
+    pontuacao_total = resultado['pontuacao_total'] if resultado else 0
+
+    # Determina o nível de risco com base na sua lógica
+    if pontuacao_total <= 10: 
+        nivel_risco = "Risco Baixo"
+    elif pontuacao_total <= 25:
+        nivel_risco = "Risco Moderado"
+    elif pontuacao_total <= 40:
+        nivel_risco = "Risco Alto"
+    else:
+        nivel_risco = "Risco Muito Alto"
+    
+    # Salva o resultado no banco de dados
+    sql_salvar = "INSERT INTO questionario_resultados (usuario_id, pontuacao_total, nivel_risco) VALUES (%s, %s, %s)"
+    cursor.execute(sql_salvar, (usuario_id, pontuacao_total, nivel_risco))
+    conn.commit()
+    
+    cursor.close()
+    conn.close()
+
+    # Redireciona para uma página de resultado (que criaremos a seguir)
+    # Passamos o ID do resultado para que a página possa buscar os detalhes
+    id_resultado = cursor.lastrowid
+    return redirect(url_for('resultado_questionario', resultado_id=id_resultado))
+
+# Rota para o JavaScript "avisar" o Flask sobre o login bem-sucedido
+@app.route('/api/registrar-login-session', methods=['POST'])
+def registrar_login_session():
+    data = request.get_json()
+    if not data or 'usuario_id' not in data:
+        return jsonify({"success": False, "message": "ID do usuário não fornecido."}), 400
+
+    # Guarda o ID e nome na sessão do Flask
+    session['usuario_id'] = data['usuario_id']
+    session['usuario_nome'] = data.get('usuario_nome', '') # .get() é mais seguro
+
+    # Este print é para você ver no terminal do Flask que a comunicação funcionou
+    print(f"Sessão Flask registrada com sucesso para o usuário ID: {session['usuario_id']}")
+    
+    return jsonify({"success": True, "message": "Sessão registrada no Flask."})
+
+@app.route('/resultado-questionario/<int:resultado_id>')
+def resultado_questionario(resultado_id):
+    # Proteção de segurança: verifica se o usuário está logado
+    if 'usuario_id' not in session:
+        flash('Você precisa estar logado para ver os resultados.', 'warning')
+        return redirect(url_for('home'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Busca o resultado específico do usuário logado para evitar que veja o de outros
+    sql = "SELECT * FROM questionario_resultados WHERE id = %s AND usuario_id = %s"
+    cursor.execute(sql, (resultado_id, session['usuario_id']))
+    resultado = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+
+    # Se o resultado não for encontrado, volta para o painel
+    if not resultado:
+        flash('Resultado não encontrado ou não pertence a você.', 'danger')
+        return redirect(url_for('painel_usuario'))
+
+    # Carrega o template HTML para mostrar o resultado
+    return render_template('resultado_questionario.html', resultado=resultado)
+
+@app.route("/locais_apoio")
+def locais_apoio():
+    return render_template("locais_apoio.html")
+
 @app.route("/send", methods=["POST"])
 def send():
     data = request.get_json(force=True) or {}

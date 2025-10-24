@@ -1,6 +1,9 @@
 // Aguarda o conteúdo da página carregar completamente
 document.addEventListener('DOMContentLoaded', function() {
 
+    // Define a URL base para o seu backend PHP. Facilita futuras alterações.
+    const phpBaseUrl = 'http://localhost/tcc-projeto-final';
+
     // =================================================================
     // === LÓGICAS PARA A ÁREA DO USUÁRIO COMUM ===
     // =================================================================
@@ -16,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(formCadastroUsuario);
             const data = Object.fromEntries(formData.entries());
 
-            fetch('/api/verifica_cadastro.php', { // URL CORRIGIDA
+            fetch(`${phpBaseUrl}/verifica_cadastro.php`, { // URL MODIFICADA
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -42,56 +45,75 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- LÓGICA PARA O FORMULÁRIO DE LOGIN DO USUÁRIO (PÁGINA INICIAL) ---
-    const formLoginUsuario = document.getElementById('formLoginUsuario');
-    if (formLoginUsuario) {
-        formLoginUsuario.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const messageDiv = document.getElementById('loginMessage');
-            messageDiv.textContent = 'Verificando...';
-            messageDiv.style.color = 'gray';
-            const formData = new FormData(formLoginUsuario);
-            const data = Object.fromEntries(formData.entries());
+const formLoginUsuario = document.getElementById('formLoginUsuario');
+if (formLoginUsuario) {
+    formLoginUsuario.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const messageDiv = document.getElementById('loginMessage');
+        messageDiv.textContent = 'Verificando...';
+        messageDiv.style.color = 'gray';
+        const formData = new FormData(formLoginUsuario);
+        const data = Object.fromEntries(formData.entries());
 
-            fetch('/api/processa_login.php', {  // URL CORRIGIDA
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    messageDiv.textContent = 'Login bem-sucedido! Redirecionando...';
-                    messageDiv.style.color = 'green';
-                    if (result.userData) {
-                        localStorage.setItem('userData', JSON.stringify(result.userData));
-                    }
-                    setTimeout(() => {
-                        window.location.href = '/painel-usuario';
-                    }, 1000);
-                } else {
-                    messageDiv.textContent = result.message;
-                    messageDiv.style.color = 'red';
-                }
-            })
-            .catch(error => {
-                console.error('Erro na requisição:', error);
-                messageDiv.textContent = 'Erro de conexão. Tente novamente.';
-                messageDiv.style.color = 'red';
-            });
-        });
-    }
+        // Passo 1: Fazer login no PHP
+        fetch(`${phpBaseUrl}/processa_login.php`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) { throw new Error(`Erro no PHP: ${response.statusText}`); }
+            return response.json();
+        })
+        .then(result => {
+            // Verifica se o login no PHP foi bem-sucedido e retornou os dados do usuário
+            if (result.success && result.userData) {
+                
+                localStorage.setItem('userData', JSON.stringify(result.userData));
 
-    // --- LÓGICA PARA O BOTÃO DE LOGOUT DO USUÁRIO ---
-    const logoutUsuarioButton = document.getElementById('logoutUsuarioButton');
-    if (logoutUsuarioButton) {
-        logoutUsuarioButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            localStorage.removeItem('userData');
-            // Futuramente, podemos adicionar uma chamada a um logout.php aqui
-            window.location.href = '/'; 
+                // Passo 2: SUCESSO NO PHP! Agora vamos avisar o Flask.
+                messageDiv.textContent = 'Autenticado! Sincronizando sessão...';
+
+                return fetch('/api/registrar-login-session', { // Chamada para a rota do Flask
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        usuario_id: result.userData.id,
+                        usuario_nome: result.userData.nome 
+                    })
+                });
+            } else {
+                // Se o login no PHP falhou, joga um erro para ser pego pelo .catch()
+                throw new Error(result.message || 'Usuário ou senha inválidos.');
+            }
+        })
+        .then(flaskResponse => {
+            if (!flaskResponse.ok) { throw new Error(`Erro no Flask: ${flaskResponse.statusText}`); }
+            return flaskResponse.json();
+        })
+        .then(flaskResult => {
+            // Passo 3: Verifica se o Flask confirmou o registro da sessão
+            if (flaskResult.success) {
+                // SUCESSO NO FLASK! Agora sim podemos redirecionar.
+                messageDiv.textContent = 'Login bem-sucedido! Redirecionando...';
+                messageDiv.style.color = 'green';
+                setTimeout(() => {
+                    window.location.href = '/painel-usuario';
+                }, 1000);
+            } else {
+                // Se o Flask retornar um erro na sua lógica interna
+                throw new Error(flaskResult.message || 'Erro ao sincronizar sessão.');
+            }
+        })
+        .catch(error => {
+            // Este .catch() pega erros de qualquer uma das etapas anteriores
+            console.error('Erro no processo de login:', error);
+            messageDiv.textContent = error.message;
+            messageDiv.style.color = 'red';
         });
-    }
+    });
+}
 
     // =================================================================
     // === LÓGICAS PARA A ÁREA DO PSICÓLOGO ===
@@ -108,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(formCadastroPsicologo);
             const data = Object.fromEntries(formData.entries());
 
-            fetch('/api/psicologos/verifica_cadastro_psicologo.php', { // URL CORRIGIDA
+            fetch(`${phpBaseUrl}/psicologos/verifica_cadastro_psicologo.php`, { // URL MODIFICADA
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -144,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(formLoginPsicologo);
             const data = Object.fromEntries(formData.entries());
 
-            fetch('/api/psicologos/processa_login_psicologo.php', { // URL CORRIGIDA
+            fetch(`${phpBaseUrl}/psicologos/processa_login_psicologo.php`, { // URL MODIFICADA
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -179,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutButton) {
         logoutButton.addEventListener('click', function(event) {
             event.preventDefault();
-            fetch('/api/psicologos/logout_psicologo.php', { // URL CORRIGIDA
+            fetch(`${phpBaseUrl}/psicologos/logout_psicologo.php`, { // URL MODIFICADA
                 method: 'POST',
                 credentials: 'include'
             })
@@ -214,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const data = Object.fromEntries(formData.entries());
 
-            fetch('/api/psicologos/atualiza_perfil_psicologo.php', { // URL CORRIGIDA
+            fetch(`${phpBaseUrl}/psicologos/atualiza_perfil_psicologo.php`, { // URL MODIFICADA
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },

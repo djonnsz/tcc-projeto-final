@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}Resultado da Autoavaliação{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos para o container principal */
+    .resultado-container {
+        max-width: 768px; /* Um pouco mais estreito para melhor leitura */
+        margin: 2.5rem auto;
+        padding: 2.5rem;
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        border: 1px solid #e5e7eb;
+    }
+
+    /* Caixa de Atenção Chamativa */
+    .atencao-box {
+        background-color: #fffbeb; /* Amarelo bem claro */
+        border-left: 5px solid #f59e0b; /* Borda amarela forte à esquerda */
+        color: #92400e; /* Marrom escuro para o texto */
+        padding: 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 2.5rem;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .atencao-box svg {
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+        color: #f59e0b;
+    }
+
+    /* Container do Gráfico de Medidor */
+    .gauge-container {
+        position: relative;
+        width: 320px;
+        height: 160px; /* Metade da largura */
+        margin: 1.5rem auto 2.5rem;
+    }
+
+    /* O medidor em si (semi-círculo) */
+    .gauge-body {
+        width: 100%;
+        height: 100%;
+        background: conic-gradient(
+            from -90deg,
+            #10b981 0% 25%,   /* Verde (Risco Baixo: 0-10) */
+            #f59e0b 25% 62.5%, /* Amarelo (Risco Moderado: 11-25) */
+            #ef4444 62.5% 100% /* Vermelho (Risco Alto: 26+) */
+        );
+        border-radius: 160px 160px 0 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+    }
+
+    /* Tampa interna para criar o efeito de anel */
+    .gauge-body::before {
+        content: '';
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        right: 25px;
+        bottom: 0;
+        background: #ffffff;
+        border-radius: 135px 135px 0 0;
+    }
+    
+    /* A seta/ponteiro */
+    .gauge-needle {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 4px;
+        height: 125px;
+        background-color: #374151; /* Cinza escuro */
+        transform-origin: bottom center;
+        /* Transição suave com efeito de "elasticidade" no final */
+        transition: transform 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        /* Garante que a ponta da seta seja arredondada */
+        clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 0, 50% 5%);
+    }
+
+    /* Ponto central do medidor */
+    .gauge-center-dot {
+        position: absolute;
+        bottom: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 24px;
+        height: 24px;
+        background-color: #374151;
+        border-radius: 50%;
+        border: 5px solid #fff;
+    }
+    
+    
+    .pontuacao-texto {
+        font-size: 1.125rem;
+        color: #4b5563; /* Cinza médio */
+        margin-top: -3.5rem; /* Sobe o texto para perto do gráfico */
+        position: relative; /* Garante que fique acima da tampa do medidor */
+    }
+    .pontuacao-numero {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #111827; /* Cinza bem escuro */
+    }
+
+    /* Caixa de interpretação do resultado */
+    .interpretacao {
+        margin-top: 2.5rem;
+        text-align: left;
+        line-height: 1.7;
+        padding: 1.75rem;
+        background-color: #f9fafb; /* Cinza muito claro */
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+    .interpretacao h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.75rem;
+    }
+    /* A cor da palavra "Risco Baixo/Alto" será controlada por JS */
+    .interpretacao strong {
+        color: var(--risk-color, #111827);
+    }
+
+    /* Estilo para o link do chatbot dentro da interpretação */
+    .interpretacao a {
+        color: #3730a3;
+        font-weight: 600;
+        text-decoration: underline;
+    }
+    .interpretacao a:hover {
+        color: #312e81;
+    }
+
+    /* Botão de voltar */
+    .btn-voltar {
+        display: inline-block;
+        margin-top: 2.5rem;
+        padding: 0.8rem 2rem;
+        background-color: #3730a3; /* Azul mais escuro */
+        color: #ffffff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-voltar:hover {
+        background-color: #312e81;
+        transform: translateY(-2px);
+        box-shadow: 0 7px 10px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="resultado-container">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Resultado da sua Autoavaliação</h1>
+
+    <div class="atencao-box">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+        </svg>
+        <p><strong>ATENÇÃO:</strong> Este teste não substitui um diagnóstico profissional. Use-o como um ponto de partida para a reflexão e o autoconhecimento.</p>
+    </div>
+
+    <div class="gauge-container">
+        <div class="gauge-body"></div>
+        <div id="gauge-needle" class="gauge-needle"></div>
+        <div class="gauge-center-dot"></div>
+    </div>
+    
+    <div class="interpretacao" id="interpretacao-box">
+        <h3>Nível de Risco Identificado: <strong id="nivel-risco">{{ resultado.nivel_risco }}</strong></h3>
+        <p id="texto-interpretacao">
+            </p>
+    </div>
+
+    <a href="{{ url_for('painel_usuario') }}" class="btn-voltar">Voltar para o Painel</a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pega a pontuação e o nível de risco que o Flask enviou para o template
+        const pontuacao = parseInt("{{ resultado.pontuacao_total }}", 10);
+        const nivelRisco = "{{ resultado.nivel_risco }}";
+        const maxPontuacao = 40; // IMPORTANTE: Defina o valor máximo de pontos possível no seu teste
+
+        // --- Lógica para posicionar a seta do Medidor (Gauge) ---
+        const needle = document.getElementById('gauge-needle');
+        
+        // Converte a pontuação em um ângulo de -90 a 90 graus para mapear o semi-círculo
+        // 0 pontos = -90 graus (extrema esquerda)
+        // maxPontuacao = 90 graus (extrema direita)
+        const angulo = (pontuacao / maxPontuacao) * 180 - 90;
+        
+        // Gira a seta para a posição correta. Usamos um pequeno timeout para o efeito de transição ser visível
+        setTimeout(() => {
+            // A rotação da seta já tem a origem na base, então só precisamos aplicar o ângulo.
+            needle.style.transform = `rotate(${angulo}deg)`;
+        }, 100);
+
+        // --- Lógica para definir o Texto de Interpretação e as Cores ---
+        const interpretacaoBox = document.getElementById('interpretacao-box');
+        const nivelRiscoElement = document.getElementById('nivel-risco');
+        const textoInterpretacaoElement = document.getElementById('texto-interpretacao');
+        const urlParaAbrirChat = "{{ url_for('painel_usuario', abrir_chat=1) }}";
+        
+        let corRisco = '#111827'; // Cor padrão (cinza escuro)
+        let textoInterpretacao = '';
+
+        // ** CÓDIGO ALTERADO COM OS LINKS **
+        switch(nivelRisco) {
+            case 'Risco Baixo':
+                corRisco = '#10b981'; // Verde
+                textoInterpretacao = 'Sua pontuação sugere um baixo risco de problemas relacionados ao jogo. Continue mantendo hábitos saudáveis e conscientes. Se sentir qualquer dificuldade, não hesite em procurar <a href="${urlParaAbrirChat}">nosso assistente virtual</a> ou o fórum.';
+                break;
+            case 'Risco Moderado':
+                corRisco = '#f59e0b'; // Amarelo
+                textoInterpretacao = `Sua pontuação indica um risco moderado, sugerindo que alguns de seus hábitos de jogo podem levar a consequências negativas. É um bom momento para refletir sobre seus gatilhos e talvez estabelecer limites mais claros. <a href="${urlParaAbrirChat}"> Nosso assistente virtual</a> pode te ajudar com estratégias.`;
+                break;
+            case 'Risco Alto':
+                corRisco = '#ef4444'; // Vermelho
+                textoInterpretacao = `Sua pontuação é um sinal de alerta importante, pois o jogo pode estar causando consequências negativas em sua vida. É muito provável que você já esteja sentindo alguns desses impactos. Este é o momento de agir. Recomendamos fortemente que você converse com <a href= "${urlParaAbrirChat}"> nosso assistente virtual</a> para obter orientação imediata e explorar os tópicos em nosso fórum. Você não está sozinho.`;
+                break;
+            case 'Risco Muito Alto':
+                corRisco = '#b91c1c'; // Vermelho escuro
+                textoInterpretacao = `Sua pontuação indica um risco muito alto, sugerindo um padrão de jogo compulsivo com consequências potencialmente graves. É crucial procurar apoio imediatamente. Por favor, inicie uma conversa com nosso <a href="${urlParaAbrirChat}"> assistente virtual</a> agora mesmo para ser encaminhado a um profissional. A ajuda está disponível e o primeiro passo é pedi-la.`;
+                break;
+            default:
+                textoInterpretacao = `Não foi possível determinar a interpretação para sua pontuação. Por favor, entre em contato com o suporte.`;
+        }
+
+        // Aplica a cor e o texto dinamicamente aos elementos da página
+        interpretacaoBox.style.setProperty('--risk-color', corRisco);
+        nivelRiscoElement.style.color = corRisco;
+        
+        // ** LINHA CORRIGIDA ABAIXO **
+        // Usamos .innerHTML para que a tag <a> do link seja renderizada como HTML e não como texto.
+        textoInterpretacaoElement.innerHTML = textoInterpretacao;
+    });
+
+</script>
+{% endblock %}

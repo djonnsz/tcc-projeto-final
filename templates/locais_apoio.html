@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% block title %}Pontos de Apoio{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos gerais da página (sem alterações) */
+    .support-page-body {
+        background-color: #f9fafb;
+        padding: 2.5rem 1rem;
+        color: #1f2937;
+    }
+    .support-container {
+        max-width: 960px;
+        margin: 0 auto;
+    }
+    .main-title {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #1f2937;
+        margin-bottom: 2rem;
+    }
+    .map-container {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 3rem;
+        border: 4px solid #2d5b69;
+    }
+    .map-container iframe {
+        width: 100%;
+        height: 450px;
+        border: 0;
+    }
+    .section-title {
+        background-color: #2d5b69;
+        color: #ffffff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .support-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    .support-card {
+        background-color: #ffffff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .support-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(45, 91, 105, 0.15);
+        cursor: pointer;
+    }
+    .support-card h3 {
+        color: #3730a3;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+    }
+    .support-card p {
+        color: #4b5563;
+        line-height: 1.6;
+        margin-bottom: 0.5rem;
+        flex-grow: 1;
+    }
+    .support-card .horario {
+        background-color: #eef2ff;
+        color: #3730a3;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        text-align: center;
+        align-self: center;
+        width: 100%;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="support-page-body">
+    <div class="support-container">
+        <h1 class="main-title">Pontos de Apoio e Reuniões</h1>
+
+        <div class="map-container">
+            <iframe
+              id="support-map"
+              src="https://maps.google.com/maps?output=embed&q=Brasil"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+
+        <!-- Seção de São Paulo -->
+        <h2 class="section-title">São Paulo</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Rua Guaporé 335, Luz, São Paulo, SP">
+                <h3>Grupo Pioneiro</h3>
+                <p>Rua Guaporé nº 335 - Bairro: Luz<br>Cidade: São Paulo - SP</p>
+                <div class="horario">SEGUNDA-FEIRA: 20H | QUINTA-FEIRA: 20H</div>
+            </div>
+            <div class="support-card" data-address="Av. Jabaquara 2682, Jabaquara, São Paulo, SP">
+                <h3>Grupo Jabaquara</h3>
+                <p>Av. Jabaquara nº 2682, Igreja São Judas Tadeu - Bairro: Jabaquara<br>Cidade: São Paulo - SP</p>
+                <div class="horario">SEXTA-FEIRA: 20H</div>
+            </div>
+            <div class="support-card" data-address="Rua Clodomiro Amazonas 50, Itaim Bibi, São Paulo, SP">
+                <h3>Grupo Itaim</h3>
+                <p>Rua Clodomiro Amazonas nº 50 - Bairro: Itaim Bibi<br>Cidade: São Paulo - SP</p>
+                <div class="horario">TERÇAS E QUINTAS: 20H</div>
+            </div>
+            <div class="support-card" data-address="Av. João Dias 822, Santo Amaro, São Paulo, SP">
+                <h3>Grupo Nova Chance</h3>
+                <p>Av. João Dias nº 822, 3º andar da Biblioteca - Bairro: Santo Amaro<br>Cidade: São Paulo - SP</p>
+                <div class="horario">QUARTA-FEIRA: 20H</div>
+            </div>
+        </div>
+
+        <!-- Seção Rio de Janeiro -->
+        <h2 class="section-title">Rio de Janeiro</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Rua do Acre 47, Centro, Rio de Janeiro, RJ">
+                <h3>Grupo Acre</h3>
+                <p>Rua do Acre nº 47 - Sala 412 - Bairro: Centro<br>Cidade: Rio de Janeiro - RJ</p>
+                <div class="horario">TER/QUA/QUI: 18H | SÁB: 10H-12H</div>
+            </div>
+            <div class="support-card" data-address="Av. Amaral Peixoto 171, Centro, Niterói, RJ">
+                <h3>Grupo Niterói</h3>
+                <p>Av. Amaral Peixoto nº 171 - Sala 804 - Bairro: Centro<br>Cidade: Niterói - RJ</p>
+                <div class="horario">SEG/QUI: 19H | SÁB: 09:30-11:30H</div>
+            </div>
+        </div>
+        
+        <!-- Seção Minas Gerais -->
+        <h2 class="section-title">Minas Gerais</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Av. do Contorno 4777, Funcionários, Belo Horizonte, MG">
+                <h3>Grupo Vida Nova</h3>
+                <p>Av. do Contorno nº 4777 - Bairro: Funcionários<br>Cidade: Belo Horizonte - BH</p>
+                <div class="horario">TERÇA E QUINTA: 19:15H</div>
+            </div>
+            <div class="support-card" data-address="Rua Moraes e Castro 892, São Matheus, Juiz de Fora, MG">
+                <h3>Grupo Juiz de Fora</h3>
+                <p>Rua Moraes e Castro, 892 - Bairro: São Matheus<br>Cidade: Juiz de Fora - MG</p>
+                <div class="horario">SEGUNDA-FEIRA: 19H</div>
+            </div>
+        </div>
+        
+        <!-- Seção Paraná -->
+        <h2 class="section-title">Paraná</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Av. Theodoro Makiolka 64, Santa Cândida, Curitiba, PR">
+                <h3>Grupo Vitória Curitiba</h3>
+                <p>Av. Theodoro Makiolka nº 64 - Bairro: Santa Cândida<br>Cidade: Curitiba - PR</p>
+                <div class="horario">QUINTAS-FEIRAS: 19:30H</div>
+            </div>
+            <div class="support-card" data-address="Rua Mato Grosso 1167, Centro, Londrina, PR">
+                <h3>Grupo Londrina</h3>
+                <p>Rua Mato Grosso, 1167 - Bairro: Centro<br>Cidade: Londrina - PR</p>
+                <div class="horario">TERÇAS-FEIRAS: 19H ÀS 21H</div>
+            </div>
+        </div>
+        
+        <!-- Seção Rio Grande do Sul -->
+        <h2 class="section-title">Rio Grande do Sul</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Av. Farrapos 2611, Floresta, Porto Alegre, RS">
+                <h3>Grupo Esperança</h3>
+                <p>Av. Farrapos nº 2611 - Bairro: Floresta<br>Cidade: Porto Alegre - RS</p>
+                <div class="horario">TERÇA-FEIRA: 19H</div>
+            </div>
+            <div class="support-card" data-address="Rua Dr. Daniel Hillebrand 1349, Rondônia, Novo Hamburgo, RS">
+                <h3>Grupo Novo Hamburgo</h3>
+                <p>Rua Dr. Daniel Hillebrand, 1349 - Bairro: Rondônia<br>Cidade: Novo Hamburgo - RS</p>
+                <div class="horario">DOMINGO: 16H ÀS 18H</div>
+            </div>
+        </div>
+        
+        <!-- Seção Santa Catarina -->
+        <h2 class="section-title">Santa Catarina</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Rua Vitor Konder 344, Centro, Florianópolis, SC">
+                <h3>Grupo Vida Nova</h3>
+                <p>Rua Vitor Konder nº 344 - Bairro: Centro<br>Cidade: Florianópolis - SC</p>
+                <div class="horario">TER/QUI: 19H | SÁB: 16H</div>
+            </div>
+        </div>
+
+        <!-- Seção Bahia -->
+        <h2 class="section-title">Bahia</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Alameda Verona 158, Pituba, Salvador, BA">
+                <h3>Grupo Salvador</h3>
+                <p>Alameda Verona nº 158 - Bairro: Pituba<br>Cidade: Salvador - BA</p>
+                <div class="horario">TERÇAS E QUINTAS-FEIRAS: 19H</div>
+            </div>
+        </div>
+
+        <!-- Seção Mato Grosso do Sul -->
+        <h2 class="section-title">Mato Grosso do Sul</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Rua Maracaju 249, Centro, Campo Grande, MS">
+                <h3>Grupo Nova Consciência</h3>
+                <p>Rua Maracaju nº 249 Sala 01 - Bairro: Centro<br>Cidade: Campo Grande - MS</p>
+                <div class="horario">TERÇA E QUINTA-FEIRA: 19H</div>
+            </div>
+        </div>
+
+        <!-- Seção Distrito Federal -->
+        <h2 class="section-title">Distrito Federal</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Sgan 609 - Módulo C - Sala 10, Asa Norte, Brasília, DF">
+                <h3>Grupo Brasília</h3>
+                <p>Sgan 609 - Módulo C - Sala 10 - Asa Norte<br>Cidade: Brasília-DF - Paróquia Verbo Divino</p>
+                <div class="horario">QUINTA-FEIRA: 19H</div>
+            </div>
+        </div>
+
+        <!-- Seção Goiás -->
+        <h2 class="section-title">Goiás</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Av. C.106, 456-538, Jardim América, Goiânia, GO">
+                <h3>Grupo Goiânia</h3>
+                <p>Av. C.106, 456-538 - Jardim América<br>Cidade: Goiânia - GO</p>
+                <div class="horario">SÁBADOS: 13:30</div>
+            </div>
+        </div>
+
+        <!-- Seção Pernambuco -->
+        <h2 class="section-title">Pernambuco</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Edifício Tereza Cristina, 3º andar, Sala 305, Boa Vista, Recife, PE">
+                <h3>Grupo Boavista</h3>
+                <p>Edifício Tereza Cristina 3º andar - Sala 305 - Bairro: Boa Vista<br>Cidade: Recife - PE</p>
+                <div class="horario">DOMINGO: 10H</div>
+            </div>
+        </div>
+        
+        <!-- Seção Ceará -->
+        <h2 class="section-title">Ceará</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Rua São Paulo, 32, Centro, Fortaleza, CE">
+                <h3>Grupo Fortaleza</h3>
+                <p>Rua São Paulo, 32 - Sala 316 - Bairro: Centro<br>Cidade: Fortaleza - CE</p>
+                <div class="horario">SEGUNDAS FEIRAS: 19:30 ÀS 21:30</div>
+            </div>
+        </div>
+
+        <!-- Seção Espírito Santo -->
+        <h2 class="section-title">Espírito Santo</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Pça. São José Operário, 221, Maruípe, Vitória, ES">
+                <h3>Grupo Vitória - ES</h3>
+                <p>Pça. São José Operário, 221 - Bairro: Maruípe<br>Cidade: Vitória - ES</p>
+                <div class="horario">SEGUNDA-FEIRA: 19H ÀS 21H</div>
+            </div>
+        </div>
+
+        <!-- Seção Rio Grande do Norte -->
+        <h2 class="section-title">Rio Grande do Norte</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Rua Domingos Amado, 3393-D, Candelária, Natal, RN">
+                <h3>Grupo Natal - RN</h3>
+                <p>Rua Domingos Amado, 3393-D (Próximo a OAB) - Bairro: Candelária<br>Cidade: Natal - RN</p>
+                <div class="horario">SEGUNDA-FEIRA: 19H ÀS 21H</div>
+            </div>
+        </div>
+
+        <!-- Seção de Apoio Público (CAPS) -->
+        <h2 class="section-title">Apoio Público - CAPS AD (São Paulo)</h2>
+        <div class="support-grid">
+            <div class="support-card" data-address="Rua Frederico Alvarenga 259, Parque Dom Pedro II, São Paulo, SP">
+                <h3>CAPS AD Centro</h3>
+                <p>Rua Frederico Alvarenga, 259, Pq. D. Pedro II<br>Telefone: (11) 3241-01</p>
+                <div class="horario">Atendimento Diário</div>
+            </div>
+            <div class="support-card" data-address="Rua Nicolau Gagliardi 439, Pinheiros, São Paulo, SP">
+                <h3>CAPS AD Pinheiros</h3>
+                <p>Rua Nicolau Gagliardi, 439 - Pinheiros<br>Telefone: (11) 3816-3959</p>
+                <div class="horario">Atendimento Diário</div>
+            </div>
+            <div class="support-card" data-address="Rua Jaibaras 251, Mooca, São Paulo, SP">
+                <h3>CAPS AD Mooca</h3>
+                <p>Rua Jaibaras, 251 - Mooca<br>Telefone: (11) 2694-6364</p>
+                <div class="horario">Atendimento Diário</div>
+            </div>
+            <div class="support-card" data-address="Rua São Benedito 2400, Santo Amaro, São Paulo, SP">
+                <h3>CAPS AD Santo Amaro</h3>
+                <p>Rua São Benedito, 2400 - Sto. Amaro<br>Telefone: (11) 5522-4833</p>
+                <div class="horario">Atendimento Diário</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const mapFrame = document.getElementById('support-map');
+    const supportCards = document.querySelectorAll('.support-card');
+    const mapBaseUrl = 'https://maps.google.com/maps?output=embed&q=';
+
+    supportCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const address = card.dataset.address;
+
+            if (address && mapFrame) {
+                const encodedAddress = encodeURIComponent(address);
+                const newMapUrl = `${mapBaseUrl}${encodedAddress}`;
+                mapFrame.src = newMapUrl;
+                mapFrame.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

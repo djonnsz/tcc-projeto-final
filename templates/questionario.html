@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Questionário de Avaliação{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 15px; max-width: 800px; margin: auto;">
+    <h1>Questionário de Avaliação</h1>
+    <p style="margin-bottom: 2rem;">Responda às perguntas abaixo com honestidade para uma avaliação do seu nível de risco.</p>
+    
+    <form method="POST" action="{{ url_for('processa_questionario') }}" target="_blank">
+        
+        {% for pergunta in perguntas %}
+        <div class="pergunta-bloco" style="margin-bottom: 2.5rem; background: white; padding: 20px; border-radius: 8px;">
+            <p style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;">{{ pergunta.ordem }}. {{ pergunta.texto_pergunta }}</p>
+            
+            <div class="opcoes-bloco">
+                {% for opcao in pergunta.opcoes %}
+                <div class="opcao-item" style="margin-bottom: 0.75rem;">
+                    <input type="radio" id="opcao_{{ opcao.id }}" name="pergunta_{{ pergunta.id }}" value="{{ opcao.id }}" required>
+                    <label for="opcao_{{ opcao.id }}" style="margin-left: 10px; cursor: pointer;">{{ opcao.texto_opcao }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <button type="submit" class="cta-button">Ver Resultado</button>
+    </form>
+</div>
+{% endblock %}
